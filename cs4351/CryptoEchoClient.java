@@ -7,10 +7,10 @@ import javax.crypto.*;
 import javax.crypto.spec.*;
 
 public class CryptoEchoClient {
- // The MultiEchoServer was provided by Yoonsik Cheon at least 10 years ago.
- // It was modified several times by Luc Longpre over the years.
- // This version is augmented by encrypting messages using AES encryption.
- // Used for Computer Security, Spring 2018.    
+    // The MultiEchoServer was provided by Yoonsik Cheon at least 10 years ago.
+    // It was modified several times by Luc Longpre over the years.
+    // This version is augmented by encrypting messages using AES encryption.
+    // Used for Computer Security, Spring 2018.
     public static void main(String[] args) {
 
         String host;
@@ -22,7 +22,7 @@ public class CryptoEchoClient {
             host = userInput.nextLine();
         }
         try {
-            Socket socket = new Socket(host, 8008);
+            Socket socket = new Socket(host, 8009);
             // in and out for socket communication using strings
             BufferedReader in
                     = new BufferedReader(new InputStreamReader(socket.getInputStream()));
@@ -46,16 +46,16 @@ public class CryptoEchoClient {
             // we will use AES encryption, CBC chaining and PCS5 block padding
             Cipher cipher = Cipher.getInstance("AES/CBC/PKCS5Padding");
             // generate an AES key derived from randomBytes array
-            SecretKeySpec secretKey = new SecretKeySpec(randomBytes, "AES");                
+            SecretKeySpec secretKey = new SecretKeySpec(randomBytes, "AES");
             cipher.init(Cipher.ENCRYPT_MODE, secretKey);
             // the initialization vector was generated randomly
             // transmit the initialization vector to the server
             // no need to encrypt the initialization vector
             // send the vector as an object
-            byte[] iv = cipher.getIV();           
-            objectOutput.writeObject(iv); 
-            
-            System.out.println("Starting messages to the server. Type messages, type BYE to end");            
+            byte[] iv = cipher.getIV();
+            objectOutput.writeObject(iv);
+
+            System.out.println("Starting messages to the server. Type messages, type BYE to end");
             boolean done = false;
             while (!done) {
                 // Read message from the user
@@ -71,6 +71,15 @@ public class CryptoEchoClient {
                 } else {
                     // Receive the reply from the server and print it
                     // You need to modify this to handle encrypted reply
+
+                    /** ADDED CODE FOR DECRYPTING RESPONSE **/
+                    cipher.init(Cipher.DECRYPT_MODE, secretKey, new IvParameterSpec(iv));
+                    byte[] encryptedByte2 = (byte[]) objectInput.readObject();
+                    String str = new String(cipher.doFinal(encryptedByte2));
+                    out.println("Echo: " + str);
+                    out.flush();
+                    /** END OF NEW CODE **/
+
                     System.out.println(in.readLine());
                 }
             }

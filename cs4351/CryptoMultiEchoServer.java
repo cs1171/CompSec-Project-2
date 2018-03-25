@@ -6,17 +6,17 @@ import javax.crypto.*;
 import javax.crypto.spec.*;
 
 public class CryptoMultiEchoServer {
- // The MultiEchoServer was provided by Yoonsik Cheon at least 10 years ago.
- // It was modified several times by Luc Longpre over the years.
- // This version is augmented by encrypting messages using AES encryption.
- // Used for Computer Security, Spring 2018.  
+    // The MultiEchoServer was provided by Yoonsik Cheon at least 10 years ago.
+    // It was modified several times by Luc Longpre over the years.
+    // This version is augmented by encrypting messages using AES encryption.
+    // Used for Computer Security, Spring 2018.
     public static void main(String[] args) {
 
         System.out.println("CryptoMultiEchoServer started.");
         int sessionID = 0; // assign incremental session ids to each client connection
 
         try {
-            ServerSocket s = new ServerSocket(8008);
+            ServerSocket s = new ServerSocket(8009);
             // The server runs until an error occurs
             // or is stopped externally
             for (;;) {
@@ -49,17 +49,17 @@ public class CryptoMultiEchoServer {
                 // in and out for socket communication using strings
                 BufferedReader in
                         = new BufferedReader(
-                                new InputStreamReader(incoming.getInputStream()));
+                        new InputStreamReader(incoming.getInputStream()));
                 PrintWriter out
                         = new PrintWriter(
-                                new OutputStreamWriter(incoming.getOutputStream()));
+                        new OutputStreamWriter(incoming.getOutputStream()));
                 // send hello to client
                 out.print("Hello! This is Java MultiEchoServer. ");
                 out.println("Enter BYE to exit.");
                 out.flush();
 
                 // We could use Base64 encoding and communicate with strings using in and out
-                // However, we show here how to send and receive serializable java objects                    
+                // However, we show here how to send and receive serializable java objects
                 ObjectInputStream objectInput = new ObjectInputStream(incoming.getInputStream());
                 ObjectOutputStream objectOutput = new ObjectOutputStream(incoming.getOutputStream());
                 // read the file of random bytes from which we can derive an AES key
@@ -92,8 +92,15 @@ public class CryptoMultiEchoServer {
                     // reply to the client with an echo of the string
                     // this reply is not encrypted, you need to modify this
                     // by encrypting the reply
-                    out.println("Echo: " + str);
-                    out.flush();
+
+                    /** ADDED CODE FOR ENCRYPTING RESPONSE **/
+                    cipher.init(Cipher.ENCRYPT_MODE, secretKey, new IvParameterSpec(iv));
+                    encryptedByte = cipher.doFinal(str.getBytes());
+                    objectOutput.writeObject(encryptedByte);
+                    // out.println("Echo: " + str);
+                    // out.flush();
+                    /** END OF NEW CODE **/
+
                     // print the message received from the client
                     System.out.println("Received from session " + id + ": " + str);
                     if (str.trim().equals("BYE")) {
