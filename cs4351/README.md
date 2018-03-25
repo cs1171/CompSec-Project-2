@@ -198,37 +198,38 @@ ag in
 your report.
 
 Report
-In your report, include the following. If we request a le, attach the le and
+
+In your report, include the following. If we request a file, attach the file and
 include the file names in the report document.
 Part 1
- Public and Private keys you generated.
- The encryption of a string containing your name and current date.
- The answer to the question about Base64 encoding.
+ Public and Private keys you generated.
+ The encryption of a string containing your name and current date.
+ The answer to the question about Base64 encoding.
 Part 2
- The certificates you generated.
+ The certificates you generated.
 Part 3
- Screenshot of running a program that veried your certicate.
+ Screenshot of running a program that veried your certicate.
 Part 4
- Screenshot of running your MultiEchoserver and EchoClient success-
+ Screenshot of running your MultiEchoserver and EchoClient success-
 fully (in any configuration.)
- Describe your experiments and the results of communicating with a
+ Describe your experiments and the results of communicating with a
 virtual machine.
 Part 5
- Include the modified programs that encrypt communications in both
+ Include the modified programs that encrypt communications in both
 directions.
 Part 6
- Include your client and server programs and any other les or programs
+ Include your client and server programs and any other les or programs
 necessary to run your programs.
- Include a screenshot of your programs running.
+ Include a screenshot of your programs running.
 Part 7
- Include the 
+ Include the 
 ag that witnesses your success.
 Feedback
 Include the answer to the following.
- Give us some feedback about this assignment. How easy was it, whether
+ Give us some feedback about this assignment. How easy was it, whether
 you encountered any challenge, what you learned, do you think it was
 useful, and/or suggestions for future years.
- If you worked in a group of 2, who did you work with, explain your
+ If you worked in a group of 2, who did you work with, explain your
 group dynamic, whether you worked physically together or communi-
 cated in other ways, whether you separated the work, and generally
 the contribution of each. If you work in a group of 2, each must turn
