@@ -80,15 +80,16 @@ public class CryptoMultiEchoServer {
                 SecretKeySpec secretKey = new SecretKeySpec(randomBytes, "AES");
                 // initialize with a specific vector instead of a random one
                 cipher.init(Cipher.DECRYPT_MODE, secretKey, new IvParameterSpec(iv));
-
+                String str;
+                byte[] encryptedByte;
                 // keep echoing the strings received until
                 // receiving the string "BYE" which will break
                 // out of the for loop and close the thread
                 for (;;) {
                     // get the encrypted bytes from the client as an object
-                    byte[] encryptedByte = (byte[]) objectInput.readObject();
+                    encryptedByte = (byte[]) objectInput.readObject();
                     // decrypt the bytes
-                    String str = new String(cipher.doFinal(encryptedByte));
+                    str = new String(cipher.doFinal(encryptedByte));
                     // reply to the client with an echo of the string
                     // this reply is not encrypted, you need to modify this
                     // by encrypting the reply
@@ -97,8 +98,9 @@ public class CryptoMultiEchoServer {
                     cipher.init(Cipher.ENCRYPT_MODE, secretKey, new IvParameterSpec(iv));
                     encryptedByte = cipher.doFinal(str.getBytes());
                     objectOutput.writeObject(encryptedByte);
-                    // out.println("Echo: " + str);
-                    // out.flush();
+                    objectOutput.flush();
+                    iv = (byte[]) objectInput.readObject();
+                    cipher.init(Cipher.DECRYPT_MODE, secretKey, new IvParameterSpec(iv));
                     /** END OF NEW CODE **/
 
                     // print the message received from the client

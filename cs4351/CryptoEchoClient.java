@@ -54,14 +54,16 @@ public class CryptoEchoClient {
             // send the vector as an object
             byte[] iv = cipher.getIV();
             objectOutput.writeObject(iv);
-
+            byte[] encryptedByte;
+            byte[] decryptedByte;
+            String userStr;
             System.out.println("Starting messages to the server. Type messages, type BYE to end");
             boolean done = false;
             while (!done) {
                 // Read message from the user
-                String userStr = userInput.nextLine();
+                userStr = userInput.nextLine();
                 // Encrypt the message
-                byte[] encryptedByte = cipher.doFinal(userStr.getBytes());
+                encryptedByte = cipher.doFinal(userStr.getBytes());
                 // Send encrypted message as an object to the server
                 objectOutput.writeObject(encryptedByte);
                 // If user says "BYE", end session
@@ -74,13 +76,14 @@ public class CryptoEchoClient {
 
                     /** ADDED CODE FOR DECRYPTING RESPONSE **/
                     cipher.init(Cipher.DECRYPT_MODE, secretKey, new IvParameterSpec(iv));
-                    byte[] encryptedByte2 = (byte[]) objectInput.readObject();
-                    String str = new String(cipher.doFinal(encryptedByte2));
-                    out.println("Echo: " + str);
-                    out.flush();
+                    decryptedByte = (byte[]) objectInput.readObject();
+                    String str = new String(cipher.doFinal(decryptedByte));
+                    System.out.println("Echo:" + str);
+                    cipher.init(Cipher.ENCRYPT_MODE, secretKey);
+                    iv = cipher.getIV();
+                    objectOutput.writeObject(iv);
+                    objectOutput.flush();
                     /** END OF NEW CODE **/
-
-                    System.out.println(in.readLine());
                 }
             }
         } catch (Exception e) {
