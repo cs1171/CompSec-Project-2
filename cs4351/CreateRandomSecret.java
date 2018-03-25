@@ -10,7 +10,7 @@ public class CreateRandomSecret {
         // and saves it in java object format to a file named randomBytes,
         // Written by Luc Longpre for Computer Security, Spring 2019.
         try {
-            FileOutputStream fos = new FileOutputStream("randomBytes");
+            FileOutputStream fos = new FileOutputStream("cs4351/randomBytes");
             byte[] b = new byte[16];
             new Random().nextBytes(b);
             fos.write(b);
