@@ -9,6 +9,7 @@ import java.io.*;
 import java.net.Socket;
 import java.security.InvalidKeyException;
 import java.security.NoSuchAlgorithmException;
+import java.security.PrivateKey;
 import java.security.PublicKey;
 import java.util.Random;
 import java.util.Scanner;
@@ -28,8 +29,9 @@ public class scpClient {
         PrintWriter out;   // for writing strings to socket
         ObjectInputStream objectInput;   // for reading objects from socket
         ObjectOutputStream objectOutput; // for writing objects to socket
-        Cipher cipheRSA, cipherEnc;
+        Cipher cipherRSA, cipherEnc;
         byte[] clientRandomBytes;
+        byte[] serverRandomBytes;
         PublicKey[] pkpair;
         Socket socket;
         // Handshake
@@ -45,27 +47,33 @@ public class scpClient {
         // Send hello to server
         out.println("hello");
         out.flush();
-        File serverCert = new File("cs4351/server1Certificate.txt");
+        File serverCert = new File("cs4351/serverCert.txt");
         FileWriter fileWriter;
-        try {
-            fileWriter = new FileWriter(serverCert);
-        } catch (IOException e) {
-            return;
-        }
         // Receive Server certificate
         // Will need to verify the certificate and extract the Server public keys
         try {
+            fileWriter = new FileWriter("serverCert.txt");
             String line = in.readLine();
+            fileWriter.write(line+"\n");
             while (!"-----END SIGNATURE-----".equals(line)) {
                 line = in.readLine();
-                if(serverCert.exists()) {
-                    fileWriter.write(line+"\n\r");
-                }
+                fileWriter.write(line+"\n");
             }
-        } catch (IOException e) {
-            System.out.println("Problem reading the certificate from server.");
+            fileWriter.flush();
+            fileWriter.close();
+        } catch (Exception ex) {
+            System.out.println("problem reading the certificate from server");
             return;
         }
+
+        PublicKey serverKey1 = PemUtils.readPublicKey("serverkey1.pem");
+        PublicKey serverKey2 = PemUtils.readPublicKey("serverkey2.pem");
+
+        PublicKey pubKey1 = PemUtils.readPublicKey("publicKey1.pem");
+        PublicKey pubKey2 = PemUtils.readPublicKey("publicKey2.pem");
+
+        PrivateKey privKey1 = PemUtils.readPrivateKey("privateKey1.pem");
+        PrivateKey privKey2 = PemUtils.readPrivateKey("privateKey2.pem");
 
         try {
             // read and send certificate to server
@@ -78,7 +86,7 @@ public class scpClient {
             }
             out.flush();
         } catch (FileNotFoundException e){
-            System.out.println("Certificate file not found.");
+            System.out.println("certificate file not found");
             return;
         }
         try {
@@ -86,13 +94,18 @@ public class scpClient {
             objectOutput = new ObjectOutputStream(socket.getOutputStream());
             objectInput = new ObjectInputStream(socket.getInputStream());
             // receive encrypted random bytes from server
+            cipherRSA = Cipher.getInstance("SHA256");
+            cipherRSA.init(Cipher.DECRYPT_MODE, pubKey1);
+
             byte[] encryptedBytes = (byte[]) objectInput.readObject();
+
+            serverRandomBytes = cipherRSA.doFinal(encryptedBytes);
             // receive signature of hash of random bytes from server
             byte[] signatureBytes = (byte[]) objectInput.readObject();
             // will need to verify the signature and decrypt the random bytes
 
-        } catch (IOException | ClassNotFoundException ex) {
-            System.out.println("Problem with receiving random bytes from server.");
+        } catch (Exception ex) {
+            System.out.println("Problem with receiving random bytes from server");
             return;
         }
         // generate random bytes for shared secret
@@ -102,51 +115,43 @@ public class scpClient {
         // here we leave all bytes to zeroes.
         // The server shifts to testing mode when receiving all byte
         // values zeroes and uses all zeroes as shared secret
+
         try {
             // you need to encrypt and send the the random byte array
             // here, precalculated encrypted bytes using zeroes as shared secret
-            byte[] encryptedBytes = {-127,-39,2,29,-88,-43,-17,-70,-115,94,-85,
-                    -126,-56,97,36,81,106,33,-75,125,-7,89,110,37,-10,19,-70,-112,
-                    -19,-103,-109,10,-86,-26,-43,115,-89,49,-6,62,87,-113,82,-93,
-                    -125,21,-83,1,-41,83,-104,54,109,-112,118,30,-107,123,62,-34,
-                    52,-15,66,119,110,-53,-79,104,-101,50,18,-99,101,-124,-13,-45,
-                    121,-48,107,-12,93,85,-12,-92,-83,-75,-123,-51,-60,-20,-34,
-                    -105,-86,-23,-105,-49,-42,17,-77,-121,-29,-45,-39,22,-49,-73,
-                    110,53,-20,47,8,-10,60,-36,-40,25,27,70,58,-126,-98,61,-13,94,
-                    -57,11,96,-57};
+            cipherEnc = Cipher.getInstance("SHA256");
+            cipherEnc.init(Cipher.ENCRYPT_MODE, serverKey1);
+            byte[] encryptedBytes = cipherEnc.doFinal(clientRandomBytes);
             objectOutput.writeObject(encryptedBytes);
             // you need to generate a signature of the hash of the random bytes
             // here, precalculated signature using the client secret key associated with the certificate
-            byte[] signatureBytes = {48, 17, -50, -3, 125, -10, -88, -6, -33,
-                    10, 14, 93, 112, 14, 74, -32, -27, -56, -86, 91, -101, 87, 117,
-                    109, 41, 1, 6, -4, -94, 47, 83, -46, 44, 76, 61, 83, 72, 36,
-                    -127, -44, 5, -77, 121, 19, 107, 91, -123, 31, 123, -22, 114,
-                    -79, 103, 39, 122, -122, 73, -99, -16, 22, 20, 37, 27, 14, 31,
-                    11, 36, 12, -118, 38, 120, 47, 57, -110, -27, -14, 31, -37, 85,
-                    -56, -108, 100, -71, 29, 26, 26, 8, -47, 49, -66, 88, 6, 73,
-                    124, -35, 9, 16, 59, 44, -113, 62, -61, -31, 58, -116, 113, 35,
-                    119, 5, -117, -91, -109, -8, 123, -40, -105, -96, -71, -50, 41,
-                    78, -113, -32, -75, 36, -29, 89, -51};
+            cipherEnc.init(Cipher.ENCRYPT_MODE, privKey1);
+            cipherEnc = Cipher.getInstance("SHA1withRSA");
+            byte[] signatureBytes = cipherEnc.doFinal(encryptedBytes);
             objectOutput.writeObject(signatureBytes);
-        } catch (IOException e) {
-            System.out.println("error computing or sending the signature for random bytes");
+        } catch (Exception e) {
+            System.out.println("Error computing or sending the signature for random bytes.");
             return;
         }
         // initialize the shared secret with all zeroes
         // will need to generate from a combination of the server and
         // the client random bytes generated
         byte[] sharedSecret = new byte[16];
-        //System.arraycopy(serverRandomBytes, 0, sharedSecret, 0, 8);
-        //System.arraycopy(clientRandomBytes, 8, sharedSecret, 8, 8);
+        new Random().nextBytes(clientRandomBytes);
+
+        System.arraycopy(serverRandomBytes, 0, sharedSecret, 0, 8);
+        System.arraycopy(clientRandomBytes, 0, sharedSecret, 8, 8);
+        SecretKeySpec secretKey;
+        byte[] iv;
         try {
             // we will use AES encryption, CBC chaining and PCS5 block padding
             cipherEnc = Cipher.getInstance("AES/CBC/PKCS5Padding");
             // generate an AES key derived from randomBytes array
-            SecretKeySpec secretKey = new SecretKeySpec(sharedSecret, "AES");
+            secretKey = new SecretKeySpec(sharedSecret, "AES");
             cipherEnc.init(Cipher.ENCRYPT_MODE, secretKey);
-            byte[] iv = cipherEnc.getIV();
-            objectOutput.writeObject(iv);
-        } catch (IOException | NoSuchAlgorithmException
+            // iv = cipherEnc.getIV();
+            // objectOutput.writeObject(iv);
+        } catch (/** IOException | **/ NoSuchAlgorithmException
                 | NoSuchPaddingException | InvalidKeyException e) {
             System.out.println("error setting up the AES encryption");
             return;
@@ -171,7 +176,13 @@ public class scpClient {
                     // Wait for reply from server,
                     encryptedBytes = (byte[]) objectInput.readObject();
                     // will need to decrypt and print the reply to the screen
-                    System.out.println("Encrypted echo received, but not decrypted");
+                    try {
+                        cipherEnc.init(Cipher.DECRYPT_MODE, secretKey);
+                    } catch (InvalidKeyException e) {
+                        System.out.println("Oops.");
+                    }
+                    String str = new String(cipherEnc.doFinal(encryptedBytes));
+                    System.out.println(str);
                 }
             }
         } catch (IllegalBlockSizeException | BadPaddingException
