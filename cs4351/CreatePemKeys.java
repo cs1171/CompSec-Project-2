@@ -33,13 +33,13 @@ public class CreatePemKeys {
         PublicKey pubKey = key.getPublic();
 
         try {
-            PemUtils.writePublicKey(pubKey, "cs4351/publicKey.pem");
+            PemUtils.writePublicKey(pubKey, "publicKey.pem");
         } catch (FileNotFoundException e) {
             System.out.println("Write Public Key: File not found Exception");
         }
 
         try {
-            PemUtils.writePrivateKey(privKey, "cs4351/privateKey.pem");
+            PemUtils.writePrivateKey(privKey, "privateKey.pem");
         } catch (FileNotFoundException e) {
             System.out.println("Write Private Key: File not found Exception");
         }

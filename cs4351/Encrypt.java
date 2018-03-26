@@ -25,7 +25,7 @@ class Encrypt {
         String encryptedString;
 
         // Read public key from file
-        pubKey = PemUtils.readPublicKey("cs4351/publicKey.pem");
+        pubKey = PemUtils.readPublicKey("publicKey.pem");
         
         encryptedByteArray = encrypt(pubKey, messageToEncrypt.getBytes());
         encryptedString = Base64.getEncoder().encodeToString(encryptedByteArray);

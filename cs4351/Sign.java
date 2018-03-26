@@ -17,7 +17,7 @@ class Sign {
         System.out.println("Signing the message: \""+messageToSign+"\"");
 
         // Read private key from file
-        privKey = PemUtils.readPrivateKey("cs4351/privateKey.pem");
+        privKey = PemUtils.readPrivateKey("privateKey.pem");
         
         signature = sign(privKey, messageToSign.getBytes());
 

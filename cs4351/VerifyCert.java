@@ -5,6 +5,7 @@ import java.security.*;
 import java.util.*;
 
 class VerifyCert {
+    private static String fileName = "cs4351/";
 
     public static void main(String[] args) {
         // This program reads a certificate file named certificate.txt
@@ -29,7 +30,7 @@ class VerifyCert {
 
         try {
             System.out.println("Reading certificate");
-            input = new BufferedReader(new FileReader("cs4351/certificate.txt"));
+            input = new BufferedReader(new FileReader(fileName));
         } catch (FileNotFoundException e) {
             System.out.println("File not found, " + e);
             return;
@@ -39,6 +40,10 @@ class VerifyCert {
             System.out.println("certificate verification failed");
         else
             System.out.println("certificate verification succeeded");
+    }
+
+    public void setFileName(String fn) {
+        this.fileName = fileName + fn;
     }
 
     public static PublicKey[] vCert(BufferedReader input) {

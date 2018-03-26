@@ -21,7 +21,7 @@ class Decrypt {
         String encryptedString, decryptedString;
 
         // get the private key from file
-        privKey = PemUtils.readPrivateKey("cs4351/privateKey.pem");
+        privKey = PemUtils.readPrivateKey("privateKey.pem");
 
         // get the encrypted Message
         try {

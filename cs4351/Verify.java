@@ -16,7 +16,7 @@ public class Verify {
         System.out.println("Verifying the signature of: \""+messageSigned+"\"");
 
         // Read public key from file
-        pubKey = PemUtils.readPublicKey("cs4351/publicKey.pem");
+        pubKey = PemUtils.readPublicKey("publicKey.pem");
 
         // Read signature from file
         try {
